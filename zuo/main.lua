@@ -16,23 +16,26 @@ local half_w = w*0.5
 local quater_h = h*0.25
 local quater_w = w*0.25
 
-local heightmap = love.graphics.newImage('map2_h.png')
-local colormap = love.graphics.newImage('map2_c.png')
-local scale_height = 40
+local heightmap = love.graphics.newImage('map_h.png')
+local colormap = love.graphics.newImage('map_c.png')
+local scale_height = 32
 
-local x = -100
-local y = 0
-local z = 150 
+local x = 256
+local y = 256
+local z = 140 
 local horizon = 20
 local phi = -1
 local rotate_speed = 0.75
 local move_speed = 30
  
 -- QUALITY SETTINGS
-local max_planes = 140
-local plane_step = 10
-local min_lod = 0.75
-local lod = 0.575
+local max_lod = 0.8
+local min_lod = 0.25
+local lod = 0.4
+local max_planes = 192
+local first_step = 8
+local min_step = 1.25
+
 local vstep = 4
 local fps = 15
 
@@ -65,16 +68,16 @@ function renderTerrain()
   if state==1 or state==2 then
 
     -- FAKE HORIZONT
-    love.graphics.setColor(180,180,220)
+    love.graphics.setColor(65,191,221)
     love.graphics.rectangle("fill",0,0,w,horizon*0.75)
-    love.graphics.setColor(220,220,240)
+    love.graphics.setColor(147,191,221)
     love.graphics.rectangle("fill",0,horizon*0.75,w,horizon*2)
-    love.graphics.setColor(255,200,220)
+    love.graphics.setColor(201,191,221)
     love.graphics.rectangle("fill",0,horizon*2,w,half_h)
 
     -- RENDER LOOP
     p = max_planes
-    step = plane_step
+    step = first_step
     while p > 1 do
 
       pleft_x  = (-cosphi*p - sinphi*p)+x
@@ -100,7 +103,7 @@ function renderTerrain()
         pleft_y = pleft_y+dy*vstep
       end
       p = p - step
-      if (step < min_lod) then step = min_lod else step = step - lod end
+      if (step < min_step) then step = min_step else step = step - lod end
     end
 
     if state==1 then
@@ -148,7 +151,14 @@ function love.update(dt)
     if love.keyboard.isDown("d") then
       phi = phi - rotate_speed*dt
     end    
-    cor=0
+    
+    if love.keyboard.isDown("q") then
+      z = z - move_speed*dt
+    end
+    if love.keyboard.isDown("e") then
+      z = z + move_speed*dt
+    end    
+    
     if love.keyboard.isDown("s") then
       x = x + sinphi * move_speed * dt
       y = y + cosphi * move_speed * dt
@@ -161,21 +171,13 @@ function love.update(dt)
 
     -- SETTINGS
     if love.keyboard.isDown("p") then
-      lod = lod + 0.01
+      if lod < max_lod then
+        lod = lod + 0.01
+      end
     end
     if love.keyboard.isDown("o") then
-      if lod > 0 then
+      if lod > min_lod then
         lod = lod - 0.01
-      end
-    end
-    if love.keyboard.isDown("k") then
-      if vstep>1 then
-        vstep = vstep - 1 
-      end
-    end
-    if love.keyboard.isDown("l") then
-      if vstep < 16 then
-        vstep = vstep + 1
       end
     end
 end
@@ -191,5 +193,15 @@ function love.keypressed(key)
   if key == "space" then
     state = state + 1
     if state > 2 then state = 1 end
+  end
+  if key == "k" then
+    if vstep>1 then
+      vstep = vstep - 1 
+    end
+  end
+  if key == "l" then
+    if vstep < 16 then
+      vstep = vstep + 1
+    end
   end
 end
