@@ -4,7 +4,7 @@
 -- Krzysztof Krystian Jankowski
 -- 2.2022 P1X // http://bits.p1x.in
 ----------------------------------------------
-local VER = 4
+local VER = 5
 
 -- VARIABLES
 ----------------------------------------------
@@ -22,19 +22,19 @@ local scale_height = 32
 
 local x = 256
 local y = 256
-local z = 140 
+local z = 150 
 local horizon = 20
 local phi = -1
 local rotate_speed = 0.75
 local move_speed = 30
  
 -- QUALITY SETTINGS
-local max_lod = 0.8
-local min_lod = 0.25
-local lod = 0.4
+local max_lod = 0.6
+local min_lod = 0.15
+local lod = 0.3
 local max_planes = 192
 local first_step = 8
-local min_step = 1.25
+local min_step = 1.2
 
 local vstep = 4
 local fps = 15
@@ -88,7 +88,10 @@ function renderTerrain()
       dx = (pright_x - pleft_x) / w
       dy = (pright_y - pleft_y) / w
       
-      for i=0,w,vstep do
+      vstep2 = 1+math.ceil(vstep*(p*0.005))
+      if vstep2 < min_step then vstep2 = min_step end
+
+      for i=0,w,vstep2 do
         getx=pleft_x%512
         gety=pleft_y%512
       
@@ -98,9 +101,9 @@ function renderTerrain()
         h_screen = (z - hmap) / p * scale_height + horizon
     
         love.graphics.setColor(r, g, b)
-        love.graphics.rectangle("fill",i,h_screen,vstep,quater_h)
-        pleft_x = pleft_x+dx*vstep
-        pleft_y = pleft_y+dy*vstep
+        love.graphics.rectangle("fill",i,h_screen,vstep2,quater_h+max_planes-p)
+        pleft_x = pleft_x+dx*vstep2
+        pleft_y = pleft_y+dy*vstep2
       end
       p = p - step
       if (step < min_step) then step = min_step else step = step - lod end
