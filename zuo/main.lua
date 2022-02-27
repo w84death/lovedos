@@ -4,7 +4,7 @@
 -- Krzysztof Krystian Jankowski
 -- 2.2022 P1X // http://bits.p1x.in
 ----------------------------------------------
-local VER = 5
+local VER = 6
 
 -- VARIABLES
 ----------------------------------------------
@@ -27,17 +27,27 @@ local horizon = 20
 local phi = -1
 local rotate_speed = 0.75
 local move_speed = 30
- 
+local mx_speed = 0.15
+local my_speed = 8
+local deadzone = 32
+
 -- QUALITY SETTINGS
 local max_lod = 0.6
 local min_lod = 0.15
 local lod = 0.3
 local max_planes = 192
 local first_step = 8
-local min_step = 1.2
+local min_step = 2
 
 local vstep = 4
 local fps = 15
+
+local mx=0
+local my=0
+local last_mx = 0
+local last_my = 0
+local dmx = 0
+local dmy = 0
 
 -- GAME STATE
 local state = 0
@@ -62,7 +72,7 @@ function renderTerrain()
     love.graphics.setColor(255,255,255)
     love.graphics.rectangle("fill", 0,h-28,w,h)
     love.graphics.setColor(0,0,0)
-    love.graphics.print("Press [SPACE] to start demo or [ESC] to quit", 8,h-18)	
+    love.graphics.print("Press [SPACE] to start demo or [ESC] to quit", 8,h-18) 
   end
 
   if state==1 or state==2 then
@@ -111,15 +121,20 @@ function renderTerrain()
 
     if state==1 then
       love.graphics.setColor(255,255,255)
-      love.graphics.print("DEMO // "..fps, 8,h-18)	
+      love.graphics.print("DEMO // "..fps, 8,h-18)      
     end
 
     if state==2 then
       love.graphics.setColor(255,255,255)
-      love.graphics.print("FLY // "..fps, 8,h-18)	
-      
+      love.graphics.print("FLY // "..fps, 8,h-18)       
       love.graphics.print("LOD / "..lod,w-200,h-18)
       love.graphics.print("VSTEP / "..vstep,w-100,h-18)
+
+      -- CROSSHAIR
+      love.graphics.setColor(0,0,0)
+      love.graphics.circle("line",mx,my,8)
+      love.graphics.setColor(192,192,192)
+      love.graphics.circle("fill",mx,my,2)
       
     end
   end
@@ -148,41 +163,65 @@ function love.update(dt)
 
   -- FLY 
   if state==2 then
+    
+    if dmx > 0 or dmx < 0 then
+      phi = phi - mx_speed*dmx*dt
+    end
+    if dmy > 0 or dmy < 0 then
+      horizon = horizon - my_speed*dmy*dt
+    end
+
     if love.keyboard.isDown("a") then
-     phi = phi + rotate_speed*dt
+      phi = phi + rotate_speed*dt
     end
     if love.keyboard.isDown("d") then
       phi = phi - rotate_speed*dt
     end    
     
-    if love.keyboard.isDown("q") then
-      z = z - move_speed*dt
-    end
-    if love.keyboard.isDown("e") then
-      z = z + move_speed*dt
-    end    
     
     if love.keyboard.isDown("s") then
       x = x + sinphi * move_speed * dt
       y = y + cosphi * move_speed * dt
     end
-    if love.keyboard.isDown("w") then 
+    if love.keyboard.isDown("w") or love.mouse.isDown(1) then 
       x = x - sinphi * move_speed * dt
       y = y - cosphi * move_speed * dt
+    if love.keyboard.isDown("q") or horizon < 30 then
+      z = z - move_speed*dt
+    end
+    if love.keyboard.isDown("e") or horizon > 50 then
+      z = z + move_speed*dt
+    end    
+    
     end
   end
+  -- MOUSE
+      
+      mx,my = love.mouse.getPosition()
+      if math.abs(half_w-mx)>deadzone then
+	      dmx = -(half_w - mx) / 24
+      else
+	      dmx = 0
+      end
+      if math.abs(half_h-my)>deadzone then
+	      dmy = -(half_h - my) / 12
+      else
+	      dmy = 0
+      end
+      
 
     -- SETTINGS
     if love.keyboard.isDown("p") then
       if lod < max_lod then
-        lod = lod + 0.01
+	      lod = lod + 0.01
       end
     end
     if love.keyboard.isDown("o") then
       if lod > min_lod then
-        lod = lod - 0.01
+      	lod = lod - 0.01
       end
     end
+
 end
 
 function love.keypressed(key)
