@@ -4,7 +4,17 @@
 -- Krzysztof Krystian Jankowski
 -- 2.2022 P1X // http://bits.p1x.in
 ----------------------------------------------
-local VER = 6
+local VER = 7
+
+-- HISTORY
+-- 0.7 - ground detection - bounce off
+--     - shows camera coordinates
+-- 0.6 - mouse look
+--     - original map
+-- 0.5 - LOD
+-- ... - main algorithm
+----------------------------------------------
+
 
 -- VARIABLES
 ----------------------------------------------
@@ -18,7 +28,8 @@ local quater_w = w*0.25
 
 local heightmap = love.graphics.newImage('map_h.png')
 local colormap = love.graphics.newImage('map_c.png')
-local scale_height = 32
+local map_zoom_scale = 0.5
+local map_z_scale = 48
 
 local x = 256
 local y = 256
@@ -30,15 +41,15 @@ local move_speed = 30
 local mx_speed = 0.15
 local my_speed = 8
 local deadzone = 32
+local camera_height = 40
 
 -- QUALITY SETTINGS
-local max_lod = 0.6
+local max_lod = 0.8
 local min_lod = 0.15
-local lod = 0.3
-local max_planes = 192
-local first_step = 8
-local min_step = 2
-
+local lod = 0.5
+local max_planes = 256
+local first_step = 12
+local min_step = 3
 local vstep = 4
 local fps = 15
 
@@ -92,7 +103,7 @@ function renderTerrain()
 
       pleft_x  = (-cosphi*p - sinphi*p)+x
       pleft_y  = ( sinphi*p - cosphi*p)+y
-      pright_x = (cosphi*p - sinphi*p)+x
+      pright_x = ( cosphi*p - sinphi*p)+x
       pright_y = (-sinphi*p - cosphi*p)+y
 
       dx = (pright_x - pleft_x) / w
@@ -102,16 +113,16 @@ function renderTerrain()
       if vstep2 < min_step then vstep2 = min_step end
 
       for i=0,w,vstep2 do
-        getx=pleft_x%512
-        gety=pleft_y%512
-      
+        getx=pleft_x*map_zoom_scale%512
+        gety=pleft_y*map_zoom_scale%512
         hmap = heightmap:getPixel(getx, gety)
         r, g, b = colormap:getPixel(getx, gety)
 
-        h_screen = (z - hmap) / p * scale_height + horizon
-    
+        h_screen = (z - hmap) / p * map_z_scale + horizon
+        
         love.graphics.setColor(r, g, b)
         love.graphics.rectangle("fill",i,h_screen,vstep2,quater_h+max_planes-p)
+        
         pleft_x = pleft_x+dx*vstep2
         pleft_y = pleft_y+dy*vstep2
       end
@@ -130,19 +141,45 @@ function renderTerrain()
       love.graphics.print("LOD / "..lod,w-200,h-18)
       love.graphics.print("VSTEP / "..vstep,w-100,h-18)
 
+      drawGPS()
+
       -- CROSSHAIR
       love.graphics.setColor(0,0,0)
       love.graphics.circle("line",mx,my,8)
-      love.graphics.setColor(192,192,192)
+      love.graphics.setColor(255,192,192)
       love.graphics.circle("fill",mx,my,2)
       
     end
   end
 end
 
+function drawGPS()
+  getx=x*map_zoom_scale%512
+  gety=y*map_zoom_scale%512
+  xx = math.floor(getx)
+  yy = math.floor(gety)
+  zz = math.floor(z)
+  love.graphics.print("GPS // "..xx.."x /"..yy.."y /"..zz.."z",8,8)
+end
+
+function getGroundHeight(x, y)
+  getx=x*map_zoom_scale%512
+  gety=y*map_zoom_scale%512
+  hmap = heightmap:getPixel(getx, gety)
+  return hmap
+end
+
+function canFly(x, y, z)
+  floor_check = getGroundHeight(x,y) < z-camera_height
+  ceil_check = z < 512
+  return floor_check and ceil_check
+end
+
 function love.update(dt)
   -- TIMER AND FPS
   t=t+dt
+
+  -- FPS
   if state>0 then
     fps_now = 1/dt
     if fps_now>fps then fps = fps + 0.25 end  
@@ -163,7 +200,7 @@ function love.update(dt)
 
   -- FLY 
   if state==2 then
-    
+
     if dmx > 0 or dmx < 0 then
       phi = phi - mx_speed*dmx*dt
     end
@@ -180,21 +217,44 @@ function love.update(dt)
     
     
     if love.keyboard.isDown("s") then
-      x = x + sinphi * move_speed * dt
-      y = y + cosphi * move_speed * dt
+      new_x =x + sinphi * move_speed * dt
+      new_y =  y + cosphi * move_speed * dt
+      if canFly(new_x, new_y, z) then
+        x = new_x
+        y = new_y
+      end
     end
+
     if love.keyboard.isDown("w") or love.mouse.isDown(1) then 
-      x = x - sinphi * move_speed * dt
-      y = y - cosphi * move_speed * dt
-    if love.keyboard.isDown("q") or horizon < 30 then
-      z = z - move_speed*dt
+      new_x = x - sinphi * move_speed * dt
+      new_y =  y - cosphi * move_speed * dt
+      if canFly(new_x, new_y, z) then
+        x = new_x
+        y = new_y
+      else
+        z = z + camera_height*2
+      end
+
     end
+
+    if love.keyboard.isDown("q") or horizon < 30 then
+      new_z = z - move_speed*dt
+      if canFly(x, y, new_z) then
+        z = new_z
+      else
+        z = z + camera_height*2
+        horizon = horizon * 1.25
+      end
+    end
+
     if love.keyboard.isDown("e") or horizon > 50 then
-      z = z + move_speed*dt
-    end    
-    
+      new_z = z + move_speed*dt
+      if canFly(x, y, new_z) then
+        z = new_z        
+      end
     end
   end
+
   -- MOUSE
       
       mx,my = love.mouse.getPosition()
