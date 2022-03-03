@@ -4,9 +4,13 @@
 -- Krzysztof Krystian Jankowski
 -- 2.2022 P1X // http://bits.p1x.in
 ----------------------------------------------
-local VER = 7
+local VER = 8
 
 -- HISTORY
+-- 0.8 - fly mode
+--     - tuned mouse steering
+--     - naming refactor
+--     - random movement for close vertexes
 -- 0.7 - ground detection - bounce off
 --     - shows camera coordinates
 -- 0.6 - mouse look
@@ -41,7 +45,7 @@ local move_speed = 30
 local mx_speed = 0.15
 local my_speed = 8
 local deadzone = 32
-local camera_height = 40
+local camera_height = 25
 
 -- QUALITY SETTINGS
 local max_lod = 0.8
@@ -62,6 +66,7 @@ local dmy = 0
 
 -- GAME STATE
 local state = 0
+local fly = false
 
 function love.load()
 end
@@ -78,8 +83,9 @@ function renderTerrain()
     love.graphics.print("Krzysztof Krystian Jankowski", 32,50)
     love.graphics.print("[O] [P] - Level of detail (LOD)", 32,h/2+10)
     love.graphics.print("[K] [L] - Vertical resolution skip", 32,h/2+20)
-    love.graphics.print("[SPACE] - Change modes", 32,h/2+30)
-    love.graphics.print("[ESC] - Back to this screen", 32,h/2+40)
+    love.graphics.print("[SPACE] - Demo mode", 32,h/2+30)
+    love.graphics.print("[F] - Fly or Look mode", 32,h/2+40)
+    love.graphics.print("[ESC] - Back to this screen", 32,h/2+50)
     love.graphics.setColor(255,255,255)
     love.graphics.rectangle("fill", 0,h-28,w,h)
     love.graphics.setColor(0,0,0)
@@ -109,22 +115,24 @@ function renderTerrain()
       dx = (pright_x - pleft_x) / w
       dy = (pright_y - pleft_y) / w
       
-      vstep2 = 1+math.ceil(vstep*(p*0.005))
-      if vstep2 < min_step then vstep2 = min_step end
+      step_x = 1+math.ceil(vstep*(p*0.005))
+      if step_x < min_step then step_x = min_step end
 
-      for i=0,w,vstep2 do
+      for screen_x=0,w,step_x do
         getx=pleft_x*map_zoom_scale%512
         gety=pleft_y*map_zoom_scale%512
         hmap = heightmap:getPixel(getx, gety)
         r, g, b = colormap:getPixel(getx, gety)
 
-        h_screen = (z - hmap) / p * map_z_scale + horizon
-        
+        screen_y = (z - hmap) / p * map_z_scale + horizon
+        shift = 0
         love.graphics.setColor(r, g, b)
-        love.graphics.rectangle("fill",i,h_screen,vstep2,quater_h+max_planes-p)
-        
-        pleft_x = pleft_x+dx*vstep2
-        pleft_y = pleft_y+dy*vstep2
+        if p < max_planes*0.20 then
+          shift = math.random(max_planes-p)*0.025
+        end
+        love.graphics.rectangle("fill",screen_x,screen_y+shift,step_x,quater_h+max_planes-p)
+        pleft_x = pleft_x+dx*step_x
+        pleft_y = pleft_y+dy*step_x
       end
       p = p - step
       if (step < min_step) then step = min_step else step = step - lod end
@@ -137,7 +145,11 @@ function renderTerrain()
 
     if state==2 then
       love.graphics.setColor(255,255,255)
-      love.graphics.print("FLY // "..fps, 8,h-18)       
+      if fly then
+        love.graphics.print("FLY // "..fps, 8,h-18)             
+      else
+        love.graphics.print("LOOK // "..fps, 8,h-18)
+      end
       love.graphics.print("LOD / "..lod,w-200,h-18)
       love.graphics.print("VSTEP / "..vstep,w-100,h-18)
 
@@ -225,29 +237,29 @@ function love.update(dt)
       end
     end
 
-    if love.keyboard.isDown("w") or love.mouse.isDown(1) then 
+    if love.keyboard.isDown("w") or love.mouse.isDown(1) or fly then 
       new_x = x - sinphi * move_speed * dt
       new_y =  y - cosphi * move_speed * dt
       if canFly(new_x, new_y, z) then
         x = new_x
         y = new_y
       else
-        z = z + camera_height*2
+        z = z + camera_height
       end
 
     end
 
-    if love.keyboard.isDown("q") or horizon < 30 then
+    if love.keyboard.isDown("q") or (horizon < 20 and fly) then
       new_z = z - move_speed*dt
       if canFly(x, y, new_z) then
         z = new_z
       else
-        z = z + camera_height*2
+        z = z + camera_height
         horizon = horizon * 1.25
       end
     end
 
-    if love.keyboard.isDown("e") or horizon > 50 then
+    if love.keyboard.isDown("e") or (horizon > 60 and fly) then
       new_z = z + move_speed*dt
       if canFly(x, y, new_z) then
         z = new_z        
@@ -304,6 +316,14 @@ function love.keypressed(key)
   if key == "l" then
     if vstep < 16 then
       vstep = vstep + 1
+    end
+  end
+
+  if key == "f" then
+    if fly == true then 
+      fly = false
+    else 
+      fly = true 
     end
   end
 end
