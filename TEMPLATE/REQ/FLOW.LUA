@@ -5,6 +5,11 @@ state_win = 3
 state_lose = 4
 state_quit = 5
 
+show_fps = false
+game_single = 0
+game_multi = 1
+game_mode = game_single
+
 local state_first = state_menu
 local state_last = state_lose
 
@@ -14,6 +19,7 @@ function stateNext(new_state)
   state = state + 1
   if state > state_last then 
     state = state_first  
+    resetMenu()
   end
 end
 

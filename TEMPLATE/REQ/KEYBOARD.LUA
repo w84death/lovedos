@@ -1,5 +1,6 @@
 function love.keypressed(key)
-  if key == "escape" then
+  love.graphics.print(key,64,0)
+   if key == "escape" then
     if state > state_menu then
       state = state_menu
     else
@@ -18,9 +19,10 @@ function love.keypressed(key)
     if key == "s" then
       menuDown()  
     end
-    if key == "space" then
+    if key == "return" then
       menuExecute()  
     end
+
   elseif state >= state_game then
     -- DELETE THIS
     if key == "space" then

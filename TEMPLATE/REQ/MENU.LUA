@@ -4,17 +4,23 @@ local menu_options = 1
 local menu_quit = 2
 
 -- OPTIONS MENU
-local menu_sound = 0
-local menu_back = 1
+local menu_fps = 0
+local menu_options_back = 1
 
 -- MENU SETTINGS
 local menu_last_position = menu_quit
 local menu_position = menu_start
 local menu_x, menu_y = 24, 64
 
+-- GAME MENU
+local menu_single = 0
+local menu_multi = 1
+local menu_game_back = 2
+
 -- MENU STATES
 local menu_state_main = 0
-local menu_state_options = 1
+local menu_state_game = 1
+local menu_state_options = 2
 local menu_state = menu_state_main
 
 function drawMenu()
@@ -25,9 +31,16 @@ function drawMenu()
     love.graphics.print("OPTIONS", menu_x,menu_y+8)  
     love.graphics.print("QUIT", menu_x,menu_y+16)
   end
-  
+
+  if menu_state == menu_state_game then
+    love.graphics.print("SINGLE PLAYER", menu_x,menu_y)
+    love.graphics.print("TWO PLAYERS", menu_x,menu_y+8)
+    love.graphics.print("BACK TO MENU", menu_x,menu_y+16)
+  end
+
   if menu_state == menu_state_options then
-    love.graphics.print("SOUND ENABLED", menu_x,menu_y)
+    if show_fps then opt = "HIDE" else opt = "SHOW" end
+    love.graphics.print(opt .. " FPS", menu_x,menu_y)
     love.graphics.print("BACK TO MENU", menu_x,menu_y+8)
   end
   
@@ -52,7 +65,7 @@ end
 function menuExecute()
   if menu_state == menu_state_main then
     if menu_position == menu_start then
-      state = state_game
+      showGame()
     end	
     if menu_position == menu_options then
       showOptions()
@@ -60,23 +73,48 @@ function menuExecute()
     if menu_position == menu_quit then
       state = state_quit
     end
-  end
-  
-  if menu_state == menu_state_options then
-    if menu_position == menu_back then
+
+  elseif menu_state == menu_state_game then
+    if menu_position == menu_single then
+      game_mode = game_single
+      state = state_game
+    end
+    if menu_position == menu_multi then
+      game_mode = game_multi
+      state = state_game
+    end
+    if menu_position == menu_game_back then
+      showMainMenu()
+    end
+ 
+  elseif menu_state == menu_state_options then
+    if menu_position == menu_fps then
+      show_fps = not show_fps
+    end
+    if menu_position == menu_options_back then
       showMainMenu()
     end
   end
 end
 
+function showGame()
+  menu_position = menu_single
+  menu_state = menu_state_game
+  menu_last_position = menu_game_back
+end
+
 function showOptions()
-  menu_position = menu_sound
+  menu_position = menu_fps
   menu_state = menu_state_options
-  menu_last_position = menu_back
+  menu_last_position = menu_options_back
 end
 
 function showMainMenu()
   menu_position = menu_start
   menu_state = menu_state_main
   menu_last_position = menu_quit
+end
+
+function resetMenu()
+  showMainMenu()
 end

@@ -4,3 +4,7 @@ half_w = w*0.5
 quater_w = w*0.25
 half_h = h*0.5
 quater_h = h*0.25
+margin = 4
+font = love.graphics.getFont()
+char_height = font:getHeight()
+padding = 14
