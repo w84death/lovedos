@@ -1,0 +1,11 @@
+w = love.graphics.getWidth()
+h = love.graphics.getHeight()
+half_w = w*0.5
+quater_w = w*0.25
+half_h = h*0.5
+quater_h = h*0.25
+font = love.graphics.getFont()
+char_height = font:getHeight()
+margin_x = 80
+margin_y = 20
+padding = 14
