@@ -17,6 +17,7 @@ function drawIntro()
   else 
     love.graphics.draw(gif_bg_light,0,0)
     love.graphics.setColor(0,0,0)
+    love.graphics.draw(gif_cessna,half_w-70,half_h-60)
     drawCenter(">>> "..game_name.." <<<")
     drawFooter("Press spacebar to continue")
   end

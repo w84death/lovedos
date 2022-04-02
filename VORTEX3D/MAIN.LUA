@@ -6,11 +6,14 @@
 -- 3.2022 P1X // http://dos.p1x.in
 ----------------------------------------------
 
-version = 05
+version = 06
 game_name = "Vortex3D"
 
 -- CHANGE LOG
 --
+-- 06 - graphics in menu
+--    - cocpit with fake instruments
+--    - new terrain
 -- 05 - forked for Vortex3D game
 -- 04 - directory cleanup
 --    - graphics added
@@ -38,6 +41,7 @@ function love.load()
   gif_bg_light = love.graphics.newImage("gfx/bg_light.gif")  
   gif_bg_dark = love.graphics.newImage("gfx/bg_dark.gif")  
   gif_kkj = love.graphics.newImage("gfx/kkj.gif")
+  gif_cessna = love.graphics.newImage("gfx/cessna.gif")
 end
 
 function love.draw()

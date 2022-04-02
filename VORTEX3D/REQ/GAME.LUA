@@ -3,13 +3,15 @@ local min_x, min_y = margin_x, margin_y
 local max_x, max_y = min_x+size, min_y+size
 local heightmap = love.graphics.newImage('gfx/map_h.gif')
 local colormap = love.graphics.newImage('gfx/map_c.gif')
-
+local gif_cocpit = love.graphics.newImage('gfx/cocpit.gif')
+local gif_steer = love.graphics.newImage('gfx/steer.gif')
+local map_size = 512
 local map_zoom_scale = 1.0
-local map_z_scale = 32
+local map_z_scale = 48
 
 local x = 256
 local y = 256
-local z = 250 
+local z = 100 
 local horizon = 20
 local phi = -1
 local rotate_speed = 0.75
@@ -23,10 +25,10 @@ local camera_height = 25
 local max_lod = 0.8
 local min_lod = 0.15
 local lod = 0.5
-local max_planes = 256
-local first_step = 12
+local max_planes = 192
+local first_step = 10
 local min_step = 2
-local vstep = 4
+local vstep = 2
 local fps = 15
 
 local t = 0
@@ -37,6 +39,7 @@ end
 function drawGame()
   drawHorizon()
   drawVertexSpace()
+  drawCocpit()
   
   if game_mode == game_demo then
     drawHeader("Demo mode, ESC to go back")        
@@ -53,7 +56,7 @@ function tickGame(dt)
   if game_mode == game_demo then
     phi = -math.sin(0.1*t)*2
     horizon = 20 +math.sin(0.5*t)*20
-    z = 250 + (50+math.sin(0.5*t)*50)
+    z = 150 + (50+math.sin(0.5*t)*50)
     x = x - sinphi * move_speed * dt
     y = y - cosphi * move_speed * dt
 
@@ -93,9 +96,35 @@ function tickGame(dt)
   end
 end
 
+function drawCocpit()
+  local s = math.sin(t)*4
+  local ss = math.sin(t*0.2)*8
+  local ns = s*-1
+  love.graphics.draw(gif_cocpit,0,h-80)
+
+  -- ARTIFICIAL HORIZONT
+  love.graphics.setColor(172,215,211)
+  love.graphics.rectangle("fill",78,h-46,48,18+ns)
+  love.graphics.setColor(85,76,64)
+  love.graphics.rectangle("fill",78,h-28+ns,48,18-ns)
+  
+  -- MAP
+  if math.floor(t)%2==0 then
+    love.graphics.setColor(0,0,0)
+  else
+    love.graphics.setColor(192,146,144)
+  end
+  love.graphics.rectangle("fill",184,h-38,4,4)
+
+  
+  -- STEERING
+  love.graphics.draw(gif_steer,half_w-110+ss,h-40+s)
+  love.graphics.draw(gif_steer,half_w+25+ss,h-40+s,true)
+end
+
 function drawHorizon()                                              
-  love.graphics.setColor(208,211,233)
-  love.graphics.rectangle("fill",0,0,w,half_h)
+  love.graphics.setColor(172,215,211)
+  love.graphics.rectangle("fill",0,0,w,h)
 end
 
 function drawVertexSpace()
@@ -114,18 +143,12 @@ function drawVertexSpace()
     if step_x < min_step then step_x = min_step end
 
     for screen_x = 0, w, step_x do
-      getx=pleft_x*map_zoom_scale%512
-      gety=pleft_y*map_zoom_scale%512
+      getx=pleft_x*map_zoom_scale%map_size
+      gety=pleft_y*map_zoom_scale%map_size
       hmap = heightmap:getPixel(getx, gety)
       r, g, b = colormap:getPixel(getx, gety)
       screen_y = (z - hmap) / p * map_z_scale + horizon
-      if p > max_planes-16 then
-        love.graphics.setColor(201,191,221)       
-      elseif p > max_planes-32 then
-        love.graphics.setColor(188,183,199)   
-      else
-        love.graphics.setColor(r, g, b)
-      end
+      love.graphics.setColor(r, g, b)
       love.graphics.rectangle("fill",
         screen_x, screen_y,
         step_x, quater_h+max_planes-p)
@@ -138,8 +161,8 @@ function drawVertexSpace()
 end
 
 function drawGPS()
-  getx=x*map_zoom_scale%512
-  gety=y*map_zoom_scale%512
+  getx=x*map_zoom_scale%map_size
+  gety=y*map_zoom_scale%map_size
   xx = math.floor(getx)
   yy = math.floor(gety)
   zz = math.floor(z)

@@ -10,7 +10,7 @@ local menu_options_back = 1
 -- MENU SETTINGS
 local menu_last_position = menu_quit
 local menu_position = menu_start
-local menu_x, menu_y = margin_x + 24, margin_y + 64
+local menu_x, menu_y = margin_x + 24, margin_y + 96
 
 -- GAME MENU
 local menu_demo = 0
@@ -23,9 +23,13 @@ local menu_state_game = 1
 local menu_state_options = 2
 local menu_state = menu_state_main
 
+local t = 0
+
 function drawMenu()
   love.graphics.draw(gif_bg_light,0,0)
-    
+  local s = math.sin(t)*4
+  love.graphics.draw(gif_cessna,half_w-70,half_h-60+s)
+  
   if menu_state == menu_state_main then
     drawHeader("Main menu")
     love.graphics.print("NEW GAME", menu_x,menu_y)
@@ -49,6 +53,10 @@ function drawMenu()
   
   love.graphics.print("->", menu_x-12, menu_y+menu_position*8)
   drawFooter(game_name.." Version "..version)
+end
+
+function tickMenu(dt)
+  t = t+dt
 end
 
 function menuUp()

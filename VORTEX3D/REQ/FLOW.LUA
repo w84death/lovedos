@@ -5,7 +5,7 @@ state_win = 3
 state_lose = 4
 state_quit = 5
 
-show_fps = false
+show_fps = true
 game_demo = 0
 game_play = 1
 game_mode = game_demo
@@ -49,6 +49,9 @@ function drawState()
 end
 
 function tickState(dt)
+  if isState(state_menu) then
+    tickMenu(dt)
+  end
   if isState(state_intro) then
     tickIntro(dt)
   end
