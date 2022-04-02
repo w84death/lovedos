@@ -7,6 +7,7 @@ function drawIntro()
     drawCenter("P1X DOS Division Presents", 64)
   elseif t<sec_time*2 then
     love.graphics.draw(gif_kkj,0,0)
+    love.graphics.setColor(0,0,0)
     drawCenter("a Krzysztof Krystian Jankowski game", 64)
   elseif t<sec_time*2.2 then
     love.graphics.draw(gif_bg_dark,0,0)
