@@ -5,15 +5,27 @@ local heightmap = love.graphics.newImage('gfx/map_h.gif')
 local colormap = love.graphics.newImage('gfx/map_c.gif')
 local gif_cocpit = love.graphics.newImage('gfx/cocpit.gif')
 local gif_steer = love.graphics.newImage('gfx/steer.gif')
+local gif_skybox = love.graphics.newImage('gfx/skybox.gif')
+local q_steers = {
+  love.graphics.newQuad(300, 0,100,64),
+  love.graphics.newQuad(200, 0,100,64),
+  love.graphics.newQuad(100, 0,100,64),
+  love.graphics.newQuad(  0, 0,100,64),
+  love.graphics.newQuad(100,64,100,64),
+  love.graphics.newQuad(200,64,100,64),
+  love.graphics.newQuad(300,64,100,64)
+}
+local q_sky = love.graphics.newQuad(320,0,320,200)
+local sky_angle = 0
 local map_size = 512
 local map_zoom_scale = 1.0
 local map_z_scale = 48
 
-local x = 256
-local y = 256
-local z = 100 
+local x = 234
+local y = 300
+local z = 90 
 local horizon = 20
-local phi = -1
+local phi = 2*3.14
 local rotate_speed = 0.75
 local move_speed = 30
 local mx_speed = 0.15
@@ -33,25 +45,21 @@ local fps = 15
 
 local t = 0
 
+
 function prepareGame()
+  love.graphics.setBackgroundColor(255,255,255) 
 end
 
 function drawGame()
   drawHorizon()
   drawVertexSpace()
   drawCocpit()
-  
-  if game_mode == game_demo then
-    drawHeader("Demo mode, ESC to go back")        
-  else
-    drawHeader("Location: Earth")
-  end
-  --love.graphics.draw(gif_cabin,0,0)
 end
 
 function tickGame(dt)
   sinphi = math.sin(phi)
   cosphi = math.cos(phi)
+  
   t=t+dt
   if game_mode == game_demo then
     phi = -math.sin(0.1*t)*2
@@ -59,15 +67,16 @@ function tickGame(dt)
     z = 150 + (50+math.sin(0.5*t)*50)
     x = x - sinphi * move_speed * dt
     y = y - cosphi * move_speed * dt
-
     return
   end
-
+  
   if love.keyboard.isDown("a") then
     phi = phi + rotate_speed*dt
+    sky_angle = sky_angle + 80*rotate_speed*dt
   end
   if love.keyboard.isDown("d") then
     phi = phi - rotate_speed*dt
+    sky_angle = sky_angle - 80*rotate_speed*dt
   end    
   
     
@@ -100,6 +109,8 @@ function drawCocpit()
   local s = math.sin(t)*4
   local ss = math.sin(t*0.2)*8
   local ns = s*-1
+
+  -- COCPIT
   love.graphics.draw(gif_cocpit,0,h-80)
 
   -- ARTIFICIAL HORIZONT
@@ -116,15 +127,17 @@ function drawCocpit()
   end
   love.graphics.rectangle("fill",184,h-38,4,4)
 
-  
   -- STEERING
-  love.graphics.draw(gif_steer,half_w-110+ss,h-40+s)
-  love.graphics.draw(gif_steer,half_w+25+ss,h-40+s,true)
+  local i = 1+math.abs(math.floor(math.sin(t*0.25)*6))
+  love.graphics.draw(gif_steer,q_steers[i], half_w-110, h-40+s)
+  love.graphics.draw(gif_steer,q_steers[i], half_w+25, h-40+s)
 end
 
-function drawHorizon()                                              
-  love.graphics.setColor(172,215,211)
-  love.graphics.rectangle("fill",0,0,w,h)
+function drawHorizon()  
+  if sky_angle > 640 then sky_angle = sky_angle-640 end
+  if sky_angle < -640 then sky_angle = sky_angle+640 end
+  love.graphics.draw(gif_skybox,-320+sky_angle,-64)
+  love.graphics.draw(gif_skybox,320+sky_angle,-64)
 end
 
 function drawVertexSpace()

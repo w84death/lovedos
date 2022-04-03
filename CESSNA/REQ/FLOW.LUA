@@ -5,7 +5,6 @@ state_win = 3
 state_lose = 4
 state_quit = 5
 
-show_fps = true
 game_demo = 0
 game_play = 1
 game_mode = game_demo

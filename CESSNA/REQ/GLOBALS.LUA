@@ -9,3 +9,4 @@ char_height = font:getHeight()
 margin_x = 80
 margin_y = 20
 padding = 14
+show_fps = false

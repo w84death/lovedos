@@ -7,14 +7,15 @@
 ----------------------------------------------
 
 version = 06
-game_name = "Vortex3D"
+game_name = "Cessna 172 Floppy"
 
 -- CHANGE LOG
 --
 -- 06 - graphics in menu
 --    - cocpit with fake instruments
 --    - new terrain
--- 05 - forked for Vortex3D game
+--    - steerign sprites
+-- 05 - forked for Cessna game
 -- 04 - directory cleanup
 --    - graphics added
 --    - working intro/outro
@@ -37,11 +38,15 @@ require("req/quit")
 
 -- LOVE
 function love.load()
+  love.graphics.print("LOADING...",8,8)
   gif_p1x = love.graphics.newImage("gfx/p1x.gif")
   gif_bg_light = love.graphics.newImage("gfx/bg_light.gif")  
   gif_bg_dark = love.graphics.newImage("gfx/bg_dark.gif")  
   gif_kkj = love.graphics.newImage("gfx/kkj.gif")
-  gif_cessna = love.graphics.newImage("gfx/cessna.gif")
+  gif_cover = love.graphics.newImage("gfx/cover.gif")
+  gif_menu = love.graphics.newImage("gfx/menu.gif")
+  gif_play = love.graphics.newImage("gfx/play.gif")
+  gif_options = love.graphics.newImage("gfx/options.gif")
 end
 
 function love.draw()

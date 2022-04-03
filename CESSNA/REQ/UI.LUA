@@ -18,11 +18,12 @@ function drawHeader(message)
 end
 
 function drawFooter(message)
+  local mid = font:getWidth(message)*0.5
   love.graphics.setColor(23,34,38)
   love.graphics.line(
     margin_x,h-margin_y-padding, 
     w-margin_x, h-margin_y-padding)
   love.graphics.print(
     message,
-    margin_x, h-margin_y-char_height)
+    half_w-mid, h-margin_y-char_height)
 end

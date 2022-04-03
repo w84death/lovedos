@@ -28,9 +28,10 @@ local t = 0
 function drawMenu()
   love.graphics.draw(gif_bg_light,0,0)
   local s = math.sin(t)*4
-  love.graphics.draw(gif_cessna,half_w-70,half_h-60+s)
+  
   
   if menu_state == menu_state_main then
+    love.graphics.draw(gif_menu,half_w-80,half_h-80)
     drawHeader("Main menu")
     love.graphics.print("NEW GAME", menu_x,menu_y)
     love.graphics.print("OPTIONS", menu_x,menu_y+8)  
@@ -38,6 +39,7 @@ function drawMenu()
   end
 
   if menu_state == menu_state_game then
+    love.graphics.draw(gif_play,half_w-80,half_h-80)
     drawHeader("New game")
     love.graphics.print("DEMO", menu_x,menu_y)
     love.graphics.print("PLAYER 1 START", menu_x,menu_y+8)
@@ -46,6 +48,7 @@ function drawMenu()
 
   if menu_state == menu_state_options then
     drawHeader("Options")
+    love.graphics.draw(gif_options,half_w-80,half_h-80)
     if show_fps then opt = "HIDE" else opt = "SHOW" end
     love.graphics.print(opt .. " FPS", menu_x,menu_y)
     love.graphics.print("BACK TO MENU", menu_x,menu_y+8)
