@@ -1,4 +1,4 @@
-# CESSNA - Floppy Edition
+# CESSNA 172 - Floppy Edition
 
 ![Cover](GFX/cover.GIF)
 
